@@ -2,25 +2,36 @@ const http = require("http");
 const os = require("os");
 const chalk = require("chalk");
 
-// console.log("Plataform: ", os.platform());
-// console.log("Architecture: ", os.arch());
-// console.log("OS Type: ", os.type());
-// console.log("Machine: ", os.machine());
-// console.log("CPUs", os.cpus());
-// console.log("Memoria: ", os.freemem());
-// console.log("Memoria total: ", os.totalmem());
-// console.log(os.hostname());
+// TODO: uso CPU (OK)
 
-// TODO: uso CPU
+function cpuUsage() {
+  const getCpu = os.cpus();
+  let user = 0;
+  let sys = 0;
+  let idle = 0;
+  let total = 0;
 
-function cpuCheck() {
-  let cpuUsage = os.cpus();
+  for (let cpu of getCpu) {
+    user += cpu.times.user;
+    sys += cpu.times.sys;
+    idle += cpu.times.idle;
+  }
+
+  total = user + sys + idle;
+  user = ((user / total) * 100).toFixed(2);
+  sys = ((sys / total) * 100).toFixed(2);
+  idle = ((idle / total) * 100).toFixed(2);
+  total = 100;
+
+  return process.stdout.write(
+    `User: ${user}%, System: ${sys}%, Idle: ${idle}%   \r`
+  );
 }
 
 // TODO: uso Memoria (OK)
 
 function checkMemory() {
-  let freemem = os.freemem() / 1024 / 1024 / 1024;
+  const freemem = os.freemem() / 1024 / 1024 / 1024;
 
   if (freemem > 1.1) {
     process.stdout.write(
@@ -32,10 +43,6 @@ function checkMemory() {
     );
   }
 }
-setInterval(() => {
-  const memoryUsage = checkMemory();
-  return memoryUsage;
-}, 1000);
 
 // TODO: uso Disco
 
@@ -44,3 +51,11 @@ setInterval(() => {
 // TODO: temperatura
 
 // TODO: arquitetura
+
+// CLI
+setInterval(() => {
+  const memoryUsage = checkMemory();
+  const cpuCheck = cpuUsage();
+
+  return cpuCheck, memoryUsage;
+}, 1000);
