@@ -52,10 +52,20 @@ function checkMemory() {
 
 // TODO: arquitetura
 
-// CLI
+// TODO: imprimir no console em tempo real
+
+function consolePrint() {
+  // essa função irá capturar o retorno dos dados monitorados e então mostrá-los de forma asyncrona no console
+
+  // memoryUsage será a primeira função a rodar, e então cada função deverá esperar a anterior para então executar
+}
+
 setInterval(() => {
   const memoryUsage = checkMemory();
   const cpuCheck = cpuUsage();
 
-  return cpuCheck, memoryUsage;
+  return {
+    memo: process.stdout.write(memoryUsage),
+    cpu: process.stdout.write(cpuCheck),
+  };
 }, 1000);
