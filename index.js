@@ -1,27 +1,35 @@
-const http = require("http");
+// const http = require("http");
 const os = require("os");
 const chalk = require("chalk");
+const readline = require("readline");
 
 // TODO: uso CPU (OK)
 
+let previousCpuTimes = os.cpus();
+
 function cpuUsage() {
-  const getCpu = os.cpus();
+  const currentCpuTimes = os.cpus();
   let user = 0;
   let sys = 0;
   let idle = 0;
   let total = 0;
 
-  for (let cpu of getCpu) {
-    user += cpu.times.user;
-    sys += cpu.times.sys;
-    idle += cpu.times.idle;
+  for (let i = 0; i < currentCpuTimes.length; i++) {
+    const prevCpu = previousCpuTimes[i].times;
+    const currCpu = currentCpuTimes[i].times;
+
+    user += currCpu.user - prevCpu.user;
+    sys += currCpu.sys - prevCpu.sys;
+    idle += currCpu.idle - prevCpu.idle;
   }
 
   total = user + sys + idle;
   user = ((user / total) * 100).toFixed(2);
   sys = ((sys / total) * 100).toFixed(2);
   idle = ((idle / total) * 100).toFixed(2);
-  total = 100;
+  previousCpuTimes = currentCpuTimes;
+
+  clearLine();
 
   return process.stdout.write(
     `User: ${user}%, System: ${sys}%, Idle: ${idle}%   \r`
@@ -32,6 +40,8 @@ function cpuUsage() {
 
 function checkMemory() {
   const freemem = os.freemem() / 1024 / 1024 / 1024;
+
+  clearLine();
 
   if (freemem > 1.1) {
     process.stdout.write(
@@ -52,20 +62,20 @@ function checkMemory() {
 
 // TODO: arquitetura
 
-// TODO: imprimir no console em tempo real
+// TODO: imprimir no console em tempo real (OK)
+
+function clearLine() {
+  readline.clearLine(process.stdout, 0);
+  readline.cursorTo(process.stdout, 0);
+}
 
 function consolePrint() {
-  // essa função irá capturar o retorno dos dados monitorados e então mostrá-los de forma asyncrona no console
-
-  // memoryUsage será a primeira função a rodar, e então cada função deverá esperar a anterior para então executar
+  readline.cursorTo(process.stdout, 0, 0);
+  cpuUsage();
+  readline.cursorTo(process.stdout, 0, 1);
+  checkMemory();
 }
 
 setInterval(() => {
-  const memoryUsage = checkMemory();
-  const cpuCheck = cpuUsage();
-
-  return {
-    memo: process.stdout.write(memoryUsage),
-    cpu: process.stdout.write(cpuCheck),
-  };
+  consolePrint();
 }, 1000);
